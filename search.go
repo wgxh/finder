@@ -30,7 +30,7 @@ func Search(path string) func(query string) func() (*bool, *int) {
 			}
 			findDone <- true
 		}
-		waitForSearch := func() {
+		searchEffect := func() {
 			for {
 				select {
 				case path := <-searchRequest:
@@ -49,7 +49,7 @@ func Search(path string) func(query string) func() (*bool, *int) {
 		}
 		return func() (*bool, *int) {
 			go search(path)
-			go waitForSearch()
+			go searchEffect()
 
 			return &ok, &matches
 		}
