@@ -7,9 +7,10 @@ import (
 )
 
 type Finder struct {
-	path    string
-	query   string
-	matches int
+	path       string
+	query      string
+	matches    int
+	activePath string
 
 	finderCount   int
 	searchRequest chan string
@@ -22,17 +23,20 @@ func (finder *Finder) searchMain(path string, master bool) {
 	if err == nil {
 		for _, file := range files {
 			name := file.Name()
-			if name == finder.query {
-				fmt.Println(path + name)
-				finder.foundMatch <- true
-			}
 			if file.IsDir() {
+				fmt.Println(name)
 				finder.searchRequest <- path + name + "/"
+			} else {
+				if name == finder.query {
+					finder.foundMatch <- true
+				}
 			}
 		}
 		if master {
 			finder.finderDone <- true
 		}
+	} else {
+		fmt.Println(err)
 	}
 }
 
@@ -41,6 +45,8 @@ func (finder *Finder) waitForFinders() {
 		select {
 		case path := <-finder.searchRequest:
 			finder.finderCount++
+			finder.activePath = path
+			fmt.Println(path)
 			go finder.searchMain(path, true)
 		case <-finder.foundMatch:
 			finder.matches++
@@ -49,6 +55,8 @@ func (finder *Finder) waitForFinders() {
 			if finder.finderCount == 0 {
 				return
 			}
+		default:
+			continue
 		}
 	}
 }

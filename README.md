@@ -1,9 +1,9 @@
 # Finder
 
 ## Description
-Goroutine based files finder.
+Go routine based files finder.
 
-## Useage
+## Usage
 ```sh
 ./finder <target-path> <query-file-name>
 ```
