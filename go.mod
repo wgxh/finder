@@ -1,3 +1,3 @@
-module finder3
+module finder
 
 go 1.16
