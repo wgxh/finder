@@ -6,14 +6,15 @@ import (
 	"time"
 )
 
+var path = flag.String("p", "/home/wgxh-cli/Code/", "")
+var query = flag.String("q", "main.js", "")
+var logMode = flag.String("log", "no-log", "")
+
 func main() {
 	start := time.Now()
-	path := flag.String("p", "/home/wgxh-cli/Code/", "")
-	query := flag.String("q", "main.js", "")
-	isLog := flag.Bool("log", false, "")
 
 	flag.Parse()
-	ok, matches := Search(*path)(*query)(*isLog)
+	ok, matches := Search(*path)(*query)(*logMode)
 	for {
 		if *ok {
 			break

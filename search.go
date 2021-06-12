@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 )
 
-func Search(path string) func(query string) func(log bool) (*bool, *int) {
+func Search(path string) func(query string) func(logMode string) (*bool, *int) {
 	matches := 0
 
 	finderCount := 1
@@ -14,17 +14,20 @@ func Search(path string) func(query string) func(log bool) (*bool, *int) {
 	searchRequest := make(chan string)
 	ok := false
 
-	return func(query string) func(log bool) (*bool, *int) {
-		search := func(path string, log bool) {
+	return func(query string) func(logMode string) (*bool, *int) {
+		search := func(path string, logMode string) {
 			files, err := ioutil.ReadDir(path)
 			if err == nil {
 				for _, file := range files {
 					name := file.Name()
 					if file.IsDir() {
+						if logMode == "search" {
+							fmt.Println(path + name + "/")
+						}
 						searchRequest <- path + name + "/"
 					} else {
 						if name == query {
-							if log {
+							if logMode == "match" {
 								fmt.Println(path + name)
 							}
 							foundMatch <- true
@@ -34,12 +37,12 @@ func Search(path string) func(query string) func(log bool) (*bool, *int) {
 			}
 			findDone <- true
 		}
-		searchEffect := func(log bool) {
+		searchEffect := func(logMode string) {
 			for {
 				select {
 				case path := <-searchRequest:
 					finderCount++
-					go search(path, log)
+					go search(path, logMode)
 				case <-foundMatch:
 					matches++
 				case <-findDone:
@@ -51,9 +54,9 @@ func Search(path string) func(query string) func(log bool) (*bool, *int) {
 				}
 			}
 		}
-		return func(log bool) (*bool, *int) {
-			go search(path, log)
-			go searchEffect(log)
+		return func(logMode string) (*bool, *int) {
+			go search(path, logMode)
+			go searchEffect(logMode)
 
 			return &ok, &matches
 		}
